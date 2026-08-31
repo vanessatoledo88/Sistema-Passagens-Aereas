@@ -147,6 +147,143 @@ Essa tabela permite que uma mesma reserva possua vários voos e que um voo possa
 
 ## Parte C - Implementação
 
+Nesta etapa foi realizada a implementação física do banco de dados da **Van Linhas Aéreas** utilizando PostgreSQL no Supabase.
 
+---
 
+### SQL de Criação
 
+O script completo de criação do banco encontra-se no arquivo:
+
+📄 **modelo.sql**
+
+---
+
+### Restrições Implementadas
+
+As restrições foram utilizadas para garantir a integridade dos dados e impedir o cadastro de informações inválidas.
+
+| Restrição | Regra Implementada | Explicação |
+|------------|------------|------------|
+| `UNIQUE (cpf)` | Não permite CPF duplicado. | Cada passageiro deve possuir um CPF único. |
+| `UNIQUE (email)` | Não permite e-mails duplicados. | Um mesmo e-mail não pode ser associado a mais de um passageiro. |
+| `UNIQUE (codigo_iata)` | Não permite códigos IATA repetidos. | Cada aeroporto deve possuir um identificador único. |
+| `UNIQUE (codigo)` | Não permite códigos de aeronave repetidos. | Cada aeronave deve possuir um código exclusivo. |
+| `NOT NULL` | Campos obrigatórios. | Impede que informações essenciais sejam registradas em branco. |
+| `CHECK (capacidade > 0)` | Capacidade da aeronave deve ser maior que zero. | Evita o cadastro de aeronaves com capacidade inválida. |
+| `CHECK (preco_base >= 0)` | Preço base não pode ser negativo. | Garante que os valores dos voos sejam válidos. |
+| `CHECK (id_aeroporto_origem <> id_aeroporto_destino)` | Origem e destino devem ser diferentes. | Um voo não pode sair e chegar no mesmo aeroporto. |
+| `CHECK (data_hora_chegada > data_hora_partida)` | Chegada após a partida. | Garante coerência entre horários do voo. |
+| `CHECK (status IN (...))` | Status permitido. | Aceita apenas os status: Pendente, Confirmada, Cancelada e Alterada. |
+| `CHECK (preco_pago >= 0)` | Preço pago não pode ser negativo. | Impede valores inválidos nas reservas. |
+
+---
+
+### Registros Inseridos
+
+Foram cadastrados dados fictícios para validar o funcionamento do banco de dados.
+
+#### Passageiro
+
+| id_passageiro | CPF | Nome | Data de Nascimento | E-mail |
+|---------------|------|------|------|------|
+| 1 | 06778016612 | Vanessa Toledo | 30/08/1988 | vanessat@vanlinhas.com |
+| 2 | 31663058822 | Daniela de Paula | 12/05/1983 | danielap@vanlinhas.com |
+| 3 | 47766412837 | Miguel de Paula | 25/04/2011 | miguelp@vanlinhas.com |
+
+---
+
+#### Aeroporto
+
+| id_aeroporto | Código IATA | Nome | Cidade | País |
+|--------------|-------------|-------------|-------------|-------------|
+| 1 | UDI | Aeroporto Ten. Cel. Aviador César Bombonato | Uberlândia | Brasil |
+| 2 | GRU | Aeroporto Internacional de Guarulhos | São Paulo | Brasil |
+| 3 | BSB | Aeroporto Internacional de Brasília | Brasília | Brasil |
+| 4 | REC | Aeroporto Internacional do Recife | Recife | Brasil |
+
+---
+
+#### Aeronave
+
+| id_aeronave | Código | Modelo | Capacidade |
+|-------------|---------|---------|---------|
+| 1 | VLA001 | Airbus A666 | 150 |
+| 2 | VLA002 | Boeing 777-888 | 180 |
+
+---
+
+#### Voo
+
+| id_voo | Número do Voo | Origem | Destino | Partida | Chegada | Preço Base |
+|---------|---------|---------|---------|---------|---------|---------|
+| 1 | VAN101 | UDI | GRU | 10/09/2026 08:00 | 10/09/2026 09:20 | R$ 350,00 |
+| 2 | VAN102 | GRU | REC | 10/09/2026 11:00 | 10/09/2026 14:00 | R$ 450,00 |
+| 3 | VAN201 | UDI | BSB | 11/09/2026 07:00 | 11/09/2026 08:00 | R$ 280,00 |
+| 4 | VAN202 | BSB | REC | 11/09/2026 09:00 | 11/09/2026 11:30 | R$ 390,00 |
+
+---
+
+#### Reserva
+
+| id_reserva | Data da Reserva | Status | Passageiro |
+|------------|------------|------------|------------|
+| 1 | 01/09/2026 | Confirmada | Vanessa Toledo |
+| 2 | 02/09/2026 | Pendente | Daniela de Paula |
+| 3 | 03/09/2026 | Alterada | Miguel de Paula |
+
+---
+
+#### Reserva_Voo
+
+| Reserva | Voo | Assento | Preço Pago |
+|----------|----------|----------|----------|
+| 1 | VAN101 | 1A | R$ 320,00 |
+| 1 | VAN102 | 1A | R$ 420,00 |
+| 2 | VAN201 | 8C | R$ 260,00 |
+| 3 | VAN201 | 10B | R$ 250,00 |
+| 3 | VAN202 | 10B | R$ 380,00 |
+
+---
+
+### Validação de Viagens com Conexão
+
+O modelo permite representar viagens com conexão através da entidade associativa **Reserva_Voo**.
+
+#### Reserva 1
+
+```text
+Uberlândia (UDI)
+        ↓
+São Paulo (GRU)
+        ↓
+Recife (REC)
+```
+
+Voos:
+
+- VAN101
+- VAN102
+
+---
+
+#### Reserva 3
+
+```text
+Uberlândia (UDI)
+        ↓
+Brasília (BSB)
+        ↓
+Recife (REC)
+```
+
+Voos:
+
+- VAN201
+- VAN202
+
+Esses exemplos demonstram que uma mesma reserva pode conter vários voos, validando corretamente o relacionamento N:N entre as entidades Reserva e Voo.
+
+## Parte D - Testes
+
+## Parte E - Consultas
