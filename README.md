@@ -287,4 +287,159 @@ Esses exemplos demonstram que uma mesma reserva pode conter vários voos, valida
 
 ## Parte D - Testes
 
+Para validar as regras de integridade implementadas no banco de dados, foram realizadas tentativas de inserção de dados inválidos. Em todos os casos, o banco rejeitou a operação, garantindo a consistência das informações.
+
+---
+
+### Testes de Violação de Regras
+
+| Teste | Resultado Esperado | Resultado Obtido | Regra Protegida |
+|---------|---------|---------|---------|
+| CPF duplicado | Inserção rejeitada | Operação rejeitada pela restrição UNIQUE | Um passageiro não pode possuir o mesmo CPF de outro passageiro |
+| FK inválida | Inserção rejeitada | Operação rejeitada pela FOREIGN KEY | Toda reserva deve estar associada a um passageiro existente |
+| Preço negativo | Inserção rejeitada | Operação rejeitada pela CHECK `ck_voo_preco_base` | O preço base do voo não pode ser negativo |
+| Origem = Destino | Inserção rejeitada | Operação rejeitada pela CHECK `ck_voo_origem_destino` | O aeroporto de origem deve ser diferente do aeroporto de destino |
+
+---
+
+### Teste 1 — CPF Duplicado
+
+#### Comando executado
+
+```sql
+INSERT INTO passageiro
+(cpf, nome, data_nascimento, email)
+VALUES
+('06778016612', 'Teste', '2000-01-01', 'teste@email.com');
+```
+
+#### Resultado esperado
+
+O banco deve rejeitar a inserção.
+
+#### Resultado obtido
+
+```text
+ERROR:  23505: duplicate key value violates unique constraint "passageiro_cpf_key"
+```
+
+#### Regra protegida
+
+O CPF deve ser único para cada passageiro.
+
+---
+
+### Teste 2 — Chave Estrangeira Inválida
+
+#### Comando executado
+
+```sql
+INSERT INTO reserva
+(data_reserva, status, id_passageiro)
+VALUES
+(CURRENT_DATE, 'Pendente', 99999);
+```
+
+#### Resultado esperado
+
+O banco deve rejeitar a inserção.
+
+#### Resultado obtido
+
+```text
+ERROR:  23503: insert or update on table "reserva" violates foreign key constraint "reserva_id_passageiro_fkey"
+```
+
+#### Regra protegida
+
+Toda reserva deve estar vinculada a um passageiro existente.
+
+---
+
+### Teste 3 — Preço Negativo
+
+#### Comando executado
+
+```sql
+INSERT INTO voo
+(
+numero_voo,
+data_hora_partida,
+data_hora_chegada,
+preco_base,
+id_aeroporto_origem,
+id_aeroporto_destino,
+id_aeronave
+)
+VALUES
+(
+'VAN998',
+'2026-09-02 14:45:06',
+'2026-09-02 16:45:18',
+-200.00,
+1,
+2,
+1
+);
+```
+
+#### Resultado esperado
+
+O banco deve rejeitar a inserção.
+
+#### Resultado obtido
+
+```text
+23514: new row for relation "voo" violates check constraint "ck_voo_preco_base"
+```
+
+#### Regra protegida
+
+O preço base do voo não pode ser negativo.
+
+---
+
+### Teste 4 — Origem Igual ao Destino
+
+#### Comando executado
+
+```sql
+INSERT INTO voo
+(
+numero_voo,
+data_hora_partida,
+data_hora_chegada,
+preco_base,
+id_aeroporto_origem,
+id_aeroporto_destino,
+id_aeronave
+)
+VALUES
+(
+'VAN999',
+'2026-09-02 14:45:06',
+'2026-09-02 16:45:18',
+200.00,
+1,
+1,
+1
+);
+```
+
+#### Resultado esperado
+
+O banco deve rejeitar a inserção.
+
+#### Resultado obtido
+
+```text
+ERROR:  23514: new row for relation "voo" violates check constraint "ck_voo_origem_destino"
+```
+
+#### Regra protegida
+
+O aeroporto de origem deve ser diferente do aeroporto de destino.
+
+---
+
 ## Parte E - Consultas
