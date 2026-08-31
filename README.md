@@ -70,8 +70,83 @@ O relacionamento entre **Reserva** e **Voo** é do tipo **N:N (muitos para muito
 
 ## Parte B - Modelagem
 
+### Cardinalidades
 
+| Relacionamento | Cardinalidade |
+|---------------|---------------|
+| Passageiro → Reserva | 1:N |
+| Reserva → Voo | N:N |
+| Aeronave → Voo | 1:N |
+| Aeroporto → Voo (Origem) | 1:N |
+| Aeroporto → Voo (Destino) | 1:N |
+
+---
+
+### Diagrama (DrawDB)
+
+O diagrama abaixo representa o modelo lógico desenvolvido para o sistema de passagens aéreas da Van Linhas Aéreas.
+
+diagrama.jpeg
+
+#### Visualizar em tamanho completo
+
+[Clique aquipeg
+
+---
+
+### Chaves Primárias (PK)
+
+| Entidade | Chave Primária |
+|-----------|-----------|
+| Passageiro | id_passageiro |
+| Aeroporto | id_aeroporto |
+| Aeronave | id_aeronave |
+| Voo | id_voo |
+| Reserva | id_reserva |
+| Reserva_Voo | (id_reserva, id_voo) |
+
+#### Observação
+
+Na entidade associativa **Reserva_Voo**, a chave primária é composta pelos atributos **id_reserva** e **id_voo**. É necessário utilizar a combinação desses dois atributos para que cada associação entre uma reserva e um voo seja identificada de forma única.
+
+---
+
+### Chaves Estrangeiras (FK)
+
+| Tabela | Chave Estrangeira | Referência |
+|----------|----------|----------|
+| Reserva | id_passageiro | Passageiro |
+| Voo | id_aeroporto_origem | Aeroporto |
+| Voo | id_aeroporto_destino | Aeroporto |
+| Voo | id_aeronave | Aeronave |
+| Reserva_Voo | id_reserva | Reserva |
+| Reserva_Voo | id_voo | Voo |
+
+#### Observação
+
+Os atributos **id_reserva** e **id_voo** da entidade associativa **Reserva_Voo** também atuam como chaves estrangeiras. O atributo **id_reserva** referencia a entidade Reserva, enquanto **id_voo** referencia a entidade Voo.
+
+---
+
+### Tabela Associativa
+
+A tabela **Reserva_Voo** foi criada para resolver o relacionamento **N:N (muitos para muitos)** entre as entidades **Reserva** e **Voo**.
+
+#### Estrutura
+
+```text
+Reserva_Voo
+|
+├── id_reserva (PK/FK)
+├── id_voo (PK/FK)
+├── assento
+└── preco_pago
+```
+
+Essa tabela permite que uma mesma reserva possua vários voos e que um voo possa participar de várias reservas, além de armazenar informações específicas de cada trecho, como assento e preço pago.
 
 ## Parte C - Implementação
+
+
 
 
