@@ -443,3 +443,99 @@ O aeroporto de origem deve ser diferente do aeroporto de destino.
 ---
 
 ## Parte E - Consultas
+
+Foram desenvolvidas consultas SQL utilizando relacionamentos entre tabelas, funções de agregação e operações de junção (JOIN).
+
+---
+
+### Consulta 1 — Reservas dos Passageiros
+
+#### SQL
+
+```sql
+SELECT
+    passageiro.nome AS passageiro, /*AS nomeia a coluna que está sendo selecionada*/
+    reserva.id_reserva AS reserva,
+    reserva.status
+FROM passageiro /*JOIN une os dados das tabelas passageiro e reserva*/
+JOIN reserva
+    ON passageiro.id_passageiro = reserva.id_passageiro; /*ON define qual campo será utilizado para relacionar as tabelas*/
+```
+
+#### Resultado Obtido
+
+| Passageiro | Reserva | Status |
+|------------|----------|----------|
+| Vanessa Toledo | 1 | Confirmada |
+| Daniela de Paula | 2 | Pendente |
+| Miguel de Paula | 3 | Alterada |
+
+---
+
+### Consulta 2 — Voos de uma Reserva
+
+#### SQL
+
+```sql
+SELECT
+    reserva.id_reserva AS reserva,
+    voo.numero_voo,
+    aeroporto_origem.cidade AS origem,
+    aeroporto_destino.cidade AS destino,
+    reserva_voo.assento,
+    reserva_voo.preco_pago
+
+FROM reserva
+
+/* Relaciona reserva com os voos incluídos na reserva */
+JOIN reserva_voo
+    ON reserva.id_reserva = reserva_voo.id_reserva
+
+/* Relaciona os registros da reserva com a tabela voo */
+JOIN voo
+    ON reserva_voo.id_voo = voo.id_voo
+
+/* Obtém o aeroporto de origem do voo */
+JOIN aeroporto AS aeroporto_origem
+    ON voo.id_aeroporto_origem = aeroporto_origem.id_aeroporto
+
+/* Obtém o aeroporto de destino do voo */
+JOIN aeroporto AS aeroporto_destino
+    ON voo.id_aeroporto_destino = aeroporto_destino.id_aeroporto;
+```
+
+#### Resultado Obtido
+
+| Reserva | Número do Voo | Origem | Destino | Assento | Preço Pago |
+|----------|----------|----------|----------|----------|----------|
+| 1 | VAN101 | Uberlândia | São Paulo | 1A | 320,00 |
+| 1 | VAN102 | São Paulo | Recife | 1A | 420,00 |
+| 2 | VAN201 | Uberlândia | Brasília | 8C | 260,00 |
+| 3 | VAN201 | Uberlândia | Brasília | 10B | 250,00 |
+| 3 | VAN202 | Brasília | Recife | 10* | 380,00 |
+
+---
+
+### Consulta 3 — Valor Total da Reserva
+
+#### SQL
+```sql
+SELECT
+id_reserva AS reserva,
+
+/* Soma todos os valores pagos pelos voos da reserva */
+SUM(preco_pago) AS total
+
+FROM reserva_voo
+
+/* Agrupa os registros por reserva */
+GROUP BY*id_reserva;
+```
+
+#### Resultado Obtido
+
+| Reserva | To*al Pago (R$) |
+|----------|----------|
+| 1 | 740,00 |
+| 2 | 260,00 |
+| 3 | 630,00 |
